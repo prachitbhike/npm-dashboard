@@ -15,9 +15,10 @@ import { format } from 'date-fns'
 interface GrowthChartProps {
   data: PackageDownloads[]
   packageName: string
+  timePeriod?: string
 }
 
-export function GrowthChart({ data, packageName }: GrowthChartProps) {
+export function GrowthChart({ data, packageName, timePeriod }: GrowthChartProps) {
   const chartData = data
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .map(d => ({
@@ -35,7 +36,7 @@ export function GrowthChart({ data, packageName }: GrowthChartProps) {
     <Card>
       <CardHeader>
         <CardTitle className="text-lg">
-          {packageName} - Download Trend
+          {packageName} - Download Trend {timePeriod && `(${timePeriod})`}
         </CardTitle>
       </CardHeader>
       <CardContent>

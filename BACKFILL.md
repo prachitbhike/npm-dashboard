@@ -22,7 +22,7 @@ npm run backfill
 
 The backfill script will:
 
-1. **Fetch 60+ popular packages** including:
+1. **Fetch 70+ popular packages** including:
    - Modern frameworks (React, Vue, Svelte, Solid, Next, Remix, Astro)
    - Build tools (Vite, Webpack, Turbo, esbuild)
    - AI/ML libraries (OpenAI, LangChain)
@@ -30,9 +30,11 @@ The backfill script will:
    - And many more trending packages
 
 2. **Get weekly data points** going back 52 weeks (1 year)
+   - Starts from 3 days ago (not today) to account for npm's data processing delay
+   - npm has a 2-3 day delay in making download statistics available
 
-3. **Store ~3,000+ data points** in your Supabase database
-   - 60 packages × 52 weeks = 3,120 data points
+3. **Store ~3,500+ data points** in your Supabase database
+   - 70 packages × ~50 weeks = 3,500 data points
 
 4. **Progress tracking** - Shows you real-time progress:
    ```
@@ -49,8 +51,18 @@ The backfill script will:
 ## How Long Does It Take?
 
 - **Time**: 10-15 minutes for all packages
-- **API calls**: ~3,120 requests to npm registry
+- **API calls**: ~3,500 requests to npm registry
 - **Rate limiting**: Built-in delays to avoid hitting npm API limits
+
+## About Errors
+
+You may see some "Failed to fetch" errors during the backfill - these are typically:
+- **Very old dates** - npm may not have data going back that far for some packages
+- **Package name not found** - if a package name is misspelled or doesn't exist
+
+The script **automatically starts from 3 days ago** (not today) to account for npm's 2-3 day data processing delay. This eliminates errors from trying to fetch recent data that npm hasn't processed yet.
+
+**These errors don't affect the backfill** - the script continues and saves all available data points.
 
 ## Customizing the Backfill
 

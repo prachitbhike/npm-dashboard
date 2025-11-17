@@ -4,6 +4,9 @@
  * This script fetches historical download data for npm packages
  * at weekly intervals going back up to 1 year.
  *
+ * Note: Starts from 3 days ago to account for npm's data processing delay.
+ * npm typically has a 2-3 day delay in making download stats available.
+ *
  * Run: npm run backfill
  */
 
@@ -176,14 +179,22 @@ async function backfillPackage(packageName: string, weeksBack: number = 52) {
   await savePackageInfo(packageInfo)
   console.log(`✓ Saved package info`)
 
+  // Start from 3 days ago to account for npm's data processing delay
   const now = new Date()
+  const dataAvailableUntil = startOfDay(subDays(now, 3))
+
   let successCount = 0
   let errorCount = 0
 
   // Fetch weekly data points going back
   for (let i = 0; i <= weeksBack; i++) {
-    const endDate = startOfDay(subWeeks(now, i))
+    const endDate = startOfDay(subWeeks(dataAvailableUntil, i))
     const startDate = startOfDay(subDays(endDate, 6)) // 7-day period
+
+    // Skip if the end date is in the future (shouldn't happen with our calculation, but safety check)
+    if (endDate > now) {
+      continue
+    }
 
     const stats = await fetchDownloads(packageName, startDate, endDate)
 

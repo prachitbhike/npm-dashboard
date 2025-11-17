@@ -180,6 +180,44 @@ Rate limits: ~100 requests per minute per IP
 - The app includes small delays between requests
 - If you hit rate limits, wait a few minutes and try again
 
+## Deployment
+
+### Deploy to Vercel
+
+This app is optimized for Vercel deployment:
+
+1. **Push to GitHub**:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git remote add origin https://github.com/YOUR_USERNAME/npm-dashboard.git
+   git push -u origin main
+   ```
+
+2. **Deploy to Vercel**:
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - Add environment variables:
+     - `VITE_SUPABASE_URL`
+     - `VITE_SUPABASE_ANON_KEY`
+   - Click Deploy!
+
+3. **Run Backfill Locally**:
+   ```bash
+   npm run backfill
+   ```
+   Data is stored in Supabase and will appear on your production site immediately.
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+### Vercel Configuration
+
+The project includes:
+- `vercel.json` - Vercel configuration
+- `.vercelignore` - Files to exclude from deployment
+- Auto-detected Vite framework settings
+
 ## Future Enhancements
 
 - [ ] Add search functionality for specific packages

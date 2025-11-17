@@ -1,0 +1,13 @@
+node_modules
+.git
+.env
+.env.local
+*.log
+dist-ssr
+coverage
+.vscode
+.idea
+*.sw?
+.DS_Store
+src/scripts/backfill.ts
+backfill.js

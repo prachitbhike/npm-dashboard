@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { RefreshCw, TrendingUp, Package, AlertCircle } from 'lucide-react'
+import { RefreshCw, TrendingUp, Package, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card'
 import { PackageCard } from './PackageCard'
@@ -7,11 +7,16 @@ import { GrowthChart } from './GrowthChart'
 import { supabase, PackageDownloads } from '@/lib/supabase'
 import { calculateGrowthMetrics, getTopGrowing, GrowthMetrics } from '@/utils/growthCalculations'
 import { fetchTopPackages, updatePackageData } from '@/services/npmService'
+import { subDays } from 'date-fns'
 
 type TimePeriod = 'month' | '3months' | '6months' | 'year'
+type SortBy = 'growth' | 'acceleration' | 'downloads' | 'name'
+type SortOrder = 'asc' | 'desc'
 
 export function Dashboard() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('month')
+  const [sortBy, setSortBy] = useState<SortBy>('growth')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
   const [growthMetrics, setGrowthMetrics] = useState<GrowthMetrics[]>([])
   const [loading, setLoading] = useState(false)
   const [updating, setUpdating] = useState(false)
@@ -26,16 +31,31 @@ export function Dashboard() {
     { value: 'year', label: '1 Year' },
   ]
 
+  const getDaysForPeriod = (period: TimePeriod): number => {
+    switch (period) {
+      case 'month': return 30
+      case '3months': return 90
+      case '6months': return 180
+      case 'year': return 365
+    }
+  }
+
   const fetchData = async () => {
     setLoading(true)
     setError(null)
 
     try {
+      // Calculate date cutoff based on selected time period
+      const daysBack = getDaysForPeriod(timePeriod)
+      const cutoffDate = subDays(new Date(), daysBack)
+      const cutoffDateStr = cutoffDate.toISOString().split('T')[0]
+
+      // Fetch data from the selected time period onwards
       const { data, error: fetchError } = await supabase
         .from('package_downloads')
         .select('*')
+        .gte('date', cutoffDateStr)
         .order('date', { ascending: false })
-        .limit(1000)
 
       if (fetchError) throw fetchError
 
@@ -54,20 +74,57 @@ export function Dashboard() {
         packageMap.get(item.package_name)!.push(item)
       })
 
-      // Calculate metrics for each package
+      // Calculate metrics for each package based on filtered time period data
       const metrics: GrowthMetrics[] = []
       packageMap.forEach((downloads, packageName) => {
         const metric = calculateGrowthMetrics(packageName, downloads)
         metrics.push(metric)
       })
 
-      const topGrowing = getTopGrowing(metrics, 50)
-      setGrowthMetrics(topGrowing)
+      // Apply sorting
+      const sortedMetrics = sortMetrics(metrics)
+      setGrowthMetrics(sortedMetrics)
     } catch (err) {
       console.error('Error fetching data:', err)
       setError('Failed to fetch data. Please try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const sortMetrics = (metrics: GrowthMetrics[]): GrowthMetrics[] => {
+    const sorted = [...metrics].sort((a, b) => {
+      let comparison = 0
+
+      switch (sortBy) {
+        case 'growth':
+          comparison = b.growthRate - a.growthRate
+          break
+        case 'acceleration':
+          comparison = b.acceleration - a.acceleration
+          break
+        case 'downloads':
+          comparison = b.currentDownloads - a.currentDownloads
+          break
+        case 'name':
+          comparison = a.packageName.localeCompare(b.packageName)
+          break
+      }
+
+      return sortOrder === 'asc' ? -comparison : comparison
+    })
+
+    return sorted
+  }
+
+  const handleSortChange = (newSortBy: SortBy) => {
+    if (sortBy === newSortBy) {
+      // Toggle sort order if clicking same sort
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      // New sort, default to descending
+      setSortBy(newSortBy)
+      setSortOrder('desc')
     }
   }
 
@@ -99,11 +156,20 @@ export function Dashboard() {
 
   const handlePackageClick = async (packageName: string) => {
     setSelectedPackage(packageName)
+    await fetchPackageData(packageName)
+  }
+
+  const fetchPackageData = async (packageName: string) => {
+    // Calculate date cutoff based on selected time period
+    const daysBack = getDaysForPeriod(timePeriod)
+    const cutoffDate = subDays(new Date(), daysBack)
+    const cutoffDateStr = cutoffDate.toISOString().split('T')[0]
 
     const { data, error: fetchError } = await supabase
       .from('package_downloads')
       .select('*')
       .eq('package_name', packageName)
+      .gte('date', cutoffDateStr)
       .order('date', { ascending: true })
 
     if (fetchError) {
@@ -116,7 +182,19 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchData()
+    // If a package is selected, refetch its data for the new time period
+    if (selectedPackage) {
+      fetchPackageData(selectedPackage)
+    }
   }, [timePeriod])
+
+  useEffect(() => {
+    // Re-sort when sort options change (but not on initial load)
+    setGrowthMetrics(prevMetrics => {
+      if (prevMetrics.length === 0) return prevMetrics
+      return sortMetrics(prevMetrics)
+    })
+  }, [sortBy, sortOrder])
 
   const exponentialPackages = growthMetrics.filter(m => m.isExponential)
   const acceleratingPackages = growthMetrics.filter(m => m.trend === 'accelerating')
@@ -162,16 +240,69 @@ export function Dashboard() {
         )}
 
         {/* Time Period Filter */}
-        <div className="flex gap-2 mb-8">
-          {timePeriods.map((period) => (
+        <div className="flex flex-wrap items-center gap-4 mb-8">
+          <div className="flex gap-2">
+            {timePeriods.map((period) => (
+              <Button
+                key={period.value}
+                variant={timePeriod === period.value ? 'default' : 'outline'}
+                onClick={() => setTimePeriod(period.value)}
+              >
+                {period.label}
+              </Button>
+            ))}
+          </div>
+
+          <div className="h-8 w-px bg-border" />
+
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground font-medium">Sort by:</span>
             <Button
-              key={period.value}
-              variant={timePeriod === period.value ? 'default' : 'outline'}
-              onClick={() => setTimePeriod(period.value)}
+              size="sm"
+              variant={sortBy === 'growth' ? 'default' : 'outline'}
+              onClick={() => handleSortChange('growth')}
+              className="flex items-center gap-1"
             >
-              {period.label}
+              Growth %
+              {sortBy === 'growth' && (
+                sortOrder === 'desc' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />
+              )}
             </Button>
-          ))}
+            <Button
+              size="sm"
+              variant={sortBy === 'acceleration' ? 'default' : 'outline'}
+              onClick={() => handleSortChange('acceleration')}
+              className="flex items-center gap-1"
+            >
+              Acceleration
+              {sortBy === 'acceleration' && (
+                sortOrder === 'desc' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant={sortBy === 'downloads' ? 'default' : 'outline'}
+              onClick={() => handleSortChange('downloads')}
+              className="flex items-center gap-1"
+            >
+              Downloads
+              {sortBy === 'downloads' && (
+                sortOrder === 'desc' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant={sortBy === 'name' ? 'default' : 'outline'}
+              onClick={() => handleSortChange('name')}
+              className="flex items-center gap-1"
+            >
+              Name
+              {sortBy === 'name' && (
+                sortOrder === 'desc' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Stats Overview */}
@@ -226,7 +357,11 @@ export function Dashboard() {
         {/* Selected Package Chart */}
         {selectedPackage && packageDownloads.length > 0 && (
           <div className="mb-8">
-            <GrowthChart data={packageDownloads} packageName={selectedPackage} />
+            <GrowthChart
+              data={packageDownloads}
+              packageName={selectedPackage}
+              timePeriod={timePeriods.find(p => p.value === timePeriod)?.label}
+            />
           </div>
         )}
 
