@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { RefreshCw, TrendingUp, Package, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { RefreshCw, TrendingUp, Package, AlertCircle, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card'
 import { PackageCard } from './PackageCard'
 import { GrowthChart } from './GrowthChart'
 import { supabase, PackageDownloads } from '@/lib/supabase'
-import { calculateGrowthMetrics, getTopGrowing, GrowthMetrics } from '@/utils/growthCalculations'
+import { calculateGrowthMetrics, GrowthMetrics } from '@/utils/growthCalculations'
 import { fetchTopPackages, updatePackageData } from '@/services/npmService'
 import { subDays } from 'date-fns'
 
