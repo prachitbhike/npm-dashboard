@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "backfill": "tsx --env-file=.env src/scripts/backfill.ts"
+    "backfill": "tsx --env-file=.env src/scripts/backfill.ts",
+    "update-daily": "tsx --env-file=.env src/scripts/update-daily.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",
