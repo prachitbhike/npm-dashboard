@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { RefreshCw, TrendingUp, Package, AlertCircle, ArrowUp, ArrowDown } from 'lucide-react'
+import { RefreshCw, TrendingUp, Package, AlertCircle, ArrowUp, ArrowDown, Plus } from 'lucide-react'
 import { Button } from './ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card'
 import { PackageCard } from './PackageCard'
 import { GrowthChart } from './GrowthChart'
+import { AddPackageModal } from './AddPackageModal'
 import { supabase, PackageDownloads } from '@/lib/supabase'
 import { calculateGrowthMetrics, GrowthMetrics } from '@/utils/growthCalculations'
 import { fetchTopPackages, updatePackageData } from '@/services/npmService'
@@ -23,6 +24,7 @@ export function Dashboard() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
   const [packageDownloads, setPackageDownloads] = useState<PackageDownloads[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [showAddPackageModal, setShowAddPackageModal] = useState(false)
 
   const timePeriods: { value: TimePeriod; label: string }[] = [
     { value: 'month', label: '1 Month' },
@@ -223,14 +225,24 @@ export function Dashboard() {
                 Track the fastest growing npm packages
               </p>
             </div>
-            <Button
-              onClick={handleUpdateData}
-              disabled={updating}
-              size="lg"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
-              {updating ? 'Updating...' : 'Update Data'}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowAddPackageModal(true)}
+                variant="outline"
+                size="lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Package
+              </Button>
+              <Button
+                onClick={handleUpdateData}
+                disabled={updating}
+                size="lg"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
+                {updating ? 'Updating...' : 'Update Data'}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -404,6 +416,13 @@ export function Dashboard() {
           </Card>
         )}
       </main>
+
+      {/* Add Package Modal */}
+      <AddPackageModal
+        isOpen={showAddPackageModal}
+        onClose={() => setShowAddPackageModal(false)}
+        onSuccess={() => fetchData()}
+      />
     </div>
   )
 }
