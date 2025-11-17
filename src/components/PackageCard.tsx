@@ -88,8 +88,8 @@ export function PackageCard({ metrics }: PackageCardProps) {
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
               Acceleration
-              {metrics.dataPoints < 3 && (
-                <span className="text-xs ml-1">(need {3 - metrics.dataPoints} more)</span>
+              {metrics.dataPoints < 4 && (
+                <span className="text-xs ml-1">(need {4 - metrics.dataPoints} more)</span>
               )}
             </span>
             {metrics.acceleration === null ? (

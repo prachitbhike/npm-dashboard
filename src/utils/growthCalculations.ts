@@ -47,22 +47,28 @@ export function isExponentialGrowth(downloadHistory: number[]): boolean {
 
 /**
  * Calculate acceleration (change in growth rate)
- * Returns null if there aren't enough data points (need at least 3)
+ * Compares growth rate of first half vs second half of the time period
+ * Returns null if there aren't enough data points (need at least 4)
  */
 export function calculateAcceleration(downloadHistory: number[]): number | null {
-  if (downloadHistory.length < 3) return null
+  if (downloadHistory.length < 4) return null
 
-  const recentGrowth = calculateGrowthRate(
+  const midPoint = Math.floor(downloadHistory.length / 2)
+
+  // Growth rate of first half (from start to midpoint)
+  const firstHalfGrowth = calculateGrowthRate(
+    downloadHistory[midPoint],
+    downloadHistory[0]
+  )
+
+  // Growth rate of second half (from midpoint to end)
+  const secondHalfGrowth = calculateGrowthRate(
     downloadHistory[downloadHistory.length - 1],
-    downloadHistory[downloadHistory.length - 2]
+    downloadHistory[midPoint]
   )
 
-  const previousGrowth = calculateGrowthRate(
-    downloadHistory[downloadHistory.length - 2],
-    downloadHistory[downloadHistory.length - 3]
-  )
-
-  return recentGrowth - previousGrowth
+  // Acceleration is the difference between second half and first half growth
+  return secondHalfGrowth - firstHalfGrowth
 }
 
 /**
@@ -109,8 +115,10 @@ export function calculateGrowthMetrics(
   )
 
   const downloadHistory = sortedData.map(d => d.downloads)
+
+  // Calculate growth over the entire time period (first to last)
   const current = downloadHistory[downloadHistory.length - 1]
-  const previous = downloadHistory[downloadHistory.length - 2]
+  const previous = downloadHistory[0]  // Changed from [length - 2] to [0]
 
   const growthRate = calculateGrowthRate(current, previous)
   const acceleration = calculateAcceleration(downloadHistory)
