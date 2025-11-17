@@ -101,7 +101,16 @@ export function Dashboard() {
           comparison = b.growthRate - a.growthRate
           break
         case 'acceleration':
-          comparison = b.acceleration - a.acceleration
+          // Handle null acceleration values (treat null as lowest)
+          if (a.acceleration === null && b.acceleration === null) {
+            comparison = 0
+          } else if (a.acceleration === null) {
+            comparison = 1  // a comes after b
+          } else if (b.acceleration === null) {
+            comparison = -1  // b comes after a
+          } else {
+            comparison = b.acceleration - a.acceleration
+          }
           break
         case 'downloads':
           comparison = b.currentDownloads - a.currentDownloads

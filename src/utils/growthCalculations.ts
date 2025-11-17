@@ -7,8 +7,9 @@ export interface GrowthMetrics {
   growthRate: number
   percentageGrowth: number
   isExponential: boolean
-  acceleration: number
+  acceleration: number | null
   trend: 'exponential' | 'accelerating' | 'growing' | 'stable' | 'declining'
+  dataPoints: number
 }
 
 /**
@@ -46,9 +47,10 @@ export function isExponentialGrowth(downloadHistory: number[]): boolean {
 
 /**
  * Calculate acceleration (change in growth rate)
+ * Returns null if there aren't enough data points (need at least 3)
  */
-export function calculateAcceleration(downloadHistory: number[]): number {
-  if (downloadHistory.length < 3) return 0
+export function calculateAcceleration(downloadHistory: number[]): number | null {
+  if (downloadHistory.length < 3) return null
 
   const recentGrowth = calculateGrowthRate(
     downloadHistory[downloadHistory.length - 1],
@@ -68,11 +70,11 @@ export function calculateAcceleration(downloadHistory: number[]): number {
  */
 export function determineTrend(
   growthRate: number,
-  acceleration: number,
+  acceleration: number | null,
   isExponential: boolean
 ): GrowthMetrics['trend'] {
   if (isExponential) return 'exponential'
-  if (acceleration > 10) return 'accelerating'
+  if (acceleration !== null && acceleration > 10) return 'accelerating'
   if (growthRate > 20) return 'growing'
   if (growthRate > -10) return 'stable'
   return 'declining'
@@ -85,7 +87,9 @@ export function calculateGrowthMetrics(
   packageName: string,
   downloadData: PackageDownloads[]
 ): GrowthMetrics {
-  if (downloadData.length < 2) {
+  const dataPoints = downloadData.length
+
+  if (dataPoints < 2) {
     return {
       packageName,
       currentDownloads: downloadData[0]?.downloads || 0,
@@ -93,8 +97,9 @@ export function calculateGrowthMetrics(
       growthRate: 0,
       percentageGrowth: 0,
       isExponential: false,
-      acceleration: 0,
+      acceleration: null,
       trend: 'stable',
+      dataPoints,
     }
   }
 
@@ -121,6 +126,7 @@ export function calculateGrowthMetrics(
     isExponential,
     acceleration,
     trend,
+    dataPoints,
   }
 }
 

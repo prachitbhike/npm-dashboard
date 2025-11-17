@@ -85,15 +85,22 @@ export function PackageCard({ metrics }: PackageCardProps) {
             </div>
           )}
 
-          {metrics.acceleration !== 0 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Acceleration</span>
-              <span className={`text-sm font-semibold ${metrics.acceleration > 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Acceleration
+              {metrics.dataPoints < 3 && (
+                <span className="text-xs ml-1">(need {3 - metrics.dataPoints} more)</span>
+              )}
+            </span>
+            {metrics.acceleration === null ? (
+              <span className="text-xs text-muted-foreground italic">Insufficient data</span>
+            ) : (
+              <span className={`text-sm font-semibold ${metrics.acceleration > 0 ? 'text-green-600' : metrics.acceleration < 0 ? 'text-red-600' : 'text-gray-600'}`}>
                 {metrics.acceleration > 0 ? '+' : ''}
                 {metrics.acceleration.toFixed(1)}%
               </span>
-            </div>
-          )}
+            )}
+          </div>
 
           <div className="pt-2 border-t">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
