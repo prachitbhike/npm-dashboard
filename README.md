@@ -1,201 +1,204 @@
 # NPM Package Growth Dashboard
 
-A comprehensive dashboard for tracking and analyzing the growth of npm packages over time. Monitor download trends, identify high-growth packages, and spot emerging patterns in the npm ecosystem.
+A real-time dashboard to track the fastest growing npm packages by usage. Visualize which packages are growing exponentially or accelerating in adoption over different time periods.
 
-## 🚀 Features
+## Features
 
-- **Real-time Package Tracking**: Add any npm package and track its download statistics
-- **Growth Analysis**: Identify packages with exponential growth potential
-- **Interactive Charts**: Visualize download trends with beautiful, responsive charts
-- **Growth Metrics**: Calculate growth scores, acceleration, and trend directions
-- **Search Integration**: Search and add packages directly from the npm registry
-- **Historical Data**: Collect and analyze historical download data
-- **Trending Packages**: Discover packages showing high growth patterns
-- **Weekly Updates**: Automated data collection to keep metrics current
+- 📈 **Track Top NPM Packages**: Monitor the top 100-500 most downloaded npm packages
+- 🚀 **Exponential Growth Detection**: Automatically identify packages with exponential growth patterns
+- ⚡ **Acceleration Metrics**: See which packages are accelerating in adoption
+- 📊 **Interactive Charts**: Visualize download trends with interactive charts
+- ⏰ **Multiple Time Periods**: View growth over 1 month, 3 months, 6 months, or 1 year
+- 🎨 **Modern UI**: Built with React, TypeScript, and Tailwind CSS
+- 💾 **Supabase Backend**: PostgreSQL database for reliable data storage
 
-## 🏗️ Architecture
+## Tech Stack
 
-### Tech Stack
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
-- **Backend**: Node.js + Hono + TypeScript
-- **Database**: PostgreSQL with time-series optimization
-- **Charts**: Recharts for interactive visualizations
-- **Data Sources**: npm Registry API + npm Downloads API
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS
+- **Charts**: Recharts
+- **Backend**: Supabase (PostgreSQL)
+- **Data Source**: NPM Registry API
 
-### System Components
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   React Frontend │────│   Hono Backend   │────│   PostgreSQL    │
-│                 │    │                  │    │                 │
-│ • Dashboard     │    │ • REST API       │    │ • Time-series   │
-│ • Charts        │    │ • Data Collector │    │ • Growth Analysis│
-│ • Package Mgmt  │    │ • Growth Engine  │    │ • Historical Data│
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌──────────────────┐
-                       │   NPM Registry   │
-                       │                  │
-                       │ • Package Info   │
-                       │ • Download Stats │
-                       └──────────────────┘
-```
+## Prerequisites
 
-## 📋 Prerequisites
+- Node.js 18+
+- npm or yarn
+- Supabase account (free tier works!)
 
-- **Node.js** 18+
-- **PostgreSQL** 12+
-- **npm** or **yarn**
+## Setup Instructions
 
-## 🚀 Quick Start
+### 1. Clone and Install Dependencies
 
-### 1. Clone and Setup
-
-```bash
-# Install backend dependencies
-cd backend
+\`\`\`bash
+cd /Users/prachitbhike/Code/npm-dashboard
 npm install
+\`\`\`
 
-# Install frontend dependencies
-cd ../frontend
-npm install
-```
+### 2. Set Up Supabase
 
-### 2. Database Setup
+1. Go to [https://supabase.com](https://supabase.com) and create a new project
+2. Wait for the database to be provisioned (takes ~2 minutes)
+3. Go to **Project Settings** → **API** and copy:
+   - Project URL
+   - Anon/Public Key
 
-```bash
-# Create PostgreSQL database
-createdb npm_dashboard
+### 3. Create Database Schema
 
-# Set up environment variables
-cd backend
+1. In your Supabase project, go to the **SQL Editor**
+2. Copy the contents of `supabase-schema.sql` from this project
+3. Paste and run the SQL script to create the tables and policies
+
+### 4. Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+\`\`\`bash
 cp .env.example .env
+\`\`\`
 
-# Edit .env with your database credentials
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=npm_dashboard
-DB_USER=postgres
-DB_PASSWORD=your_password
-```
+Edit `.env` and add your Supabase credentials:
 
-### 3. Initialize Database Schema
+\`\`\`
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+\`\`\`
 
-```bash
-cd backend
+### 5. Run the Development Server
 
-# Start the backend (this will auto-create tables)
+\`\`\`bash
 npm run dev
-```
+\`\`\`
 
-The server will automatically create the database schema on first run.
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 4. Start the Application
+## Usage
 
-Open two terminal windows:
+### First Time Setup
 
-**Terminal 1 - Backend:**
-```bash
-cd backend
-npm run dev
-```
-Backend runs on http://localhost:3001
+1. **Update Data**: Click the "Update Data" button to fetch the latest npm package statistics
+   - This will fetch data for the top 20 packages (configurable)
+   - Takes ~1-2 minutes depending on rate limits
+   - Data is saved to your Supabase database
 
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
-npm run dev
-```
-Frontend runs on http://localhost:5173
+2. **Browse Packages**: Scroll through the package cards to see growth metrics
+   - 🟢 Green badges indicate exponential or accelerating growth
+   - Growth rate shows percentage change
+   - Acceleration shows change in growth rate
 
-## 📊 Usage
+3. **View Charts**: Click on any package card to see its download trend chart
 
-### Adding Packages
-
-1. Click **"Add Package"** in the header
-2. Either:
-   - Enter a package name directly (e.g., `react`, `lodash`)
-   - Search for packages using the search feature
-3. Click **"Add"** to start tracking
-
-### Viewing Analytics
-
-- **Dashboard Overview**: See aggregate statistics and trending packages
-- **Package List**: View all tracked packages with growth indicators
-- **Package Details**: Click any package for detailed charts and metrics
-- **Time Range**: Adjust time ranges (7d, 30d, 90d) for different perspectives
+4. **Filter by Time Period**: Use the time period buttons to switch between:
+   - 1 Month
+   - 3 Months
+   - 6 Months
+   - 1 Year
 
 ### Understanding Metrics
 
-- **Growth Score**: Composite metric indicating growth potential (0-5 scale)
-- **Weekly Growth Rate**: Percentage change in downloads week-over-week
-- **Trend Direction**: `accelerating`, `decelerating`, or `stable`
-- **High Growth**: Packages marked as showing exceptional growth
+- **Growth Rate**: Percentage change in downloads compared to previous period
+- **Acceleration**: Change in the growth rate (positive = speeding up)
+- **Exponential**: Packages where growth rate is consistently increasing
+- **Accelerating**: Packages with significant positive acceleration
+- **Growing**: Packages with >20% growth
+- **Stable**: Packages with -10% to 20% change
+- **Declining**: Packages with declining downloads
 
-## 🔧 Data Collection
+## Project Structure
 
-### Manual Collection
-```bash
-cd backend
+\`\`\`
+npm-dashboard/
+├── src/
+│   ├── components/
+│   │   ├── ui/              # Reusable UI components
+│   │   │   ├── Card.tsx
+│   │   │   ├── Button.tsx
+│   │   │   └── Badge.tsx
+│   │   ├── Dashboard.tsx    # Main dashboard component
+│   │   ├── PackageCard.tsx  # Package metric card
+│   │   └── GrowthChart.tsx  # Chart visualization
+│   ├── lib/
+│   │   └── supabase.ts      # Supabase client
+│   ├── services/
+│   │   └── npmService.ts    # NPM API integration
+│   ├── utils/
+│   │   └── growthCalculations.ts  # Growth metrics logic
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── supabase-schema.sql      # Database schema
+├── package.json
+├── vite.config.ts
+└── README.md
+\`\`\`
 
-# Collect data for all tracked packages
-npm run collect collect
+## Configuration
 
-# Add a new package
-npm run collect add <package-name>
+### Tracking More Packages
 
-# Collect historical data (90 days)
-npm run collect historical <package-name> 90
-```
+Edit `src/services/npmService.ts` and modify the `fetchTopPackages` function to:
+- Add more package names to the curated list
+- Change the limit parameter in `handleUpdateData` (Dashboard.tsx)
 
-### Example: Getting Started with Sample Data
+### Update Frequency
 
-```bash
-# Add some popular packages to track
-npm run collect add react
-npm run collect add vue
-npm run collect add svelte
-npm run collect add @angular/core
+Currently uses manual refresh. To add automatic updates:
+- Set up Supabase Edge Functions with cron jobs
+- Or implement client-side periodic fetching with `setInterval`
 
-# Collect their data
-npm run collect collect
-```
+### Growth Detection Tuning
 
-## 🗄️ Database Schema
+Adjust thresholds in `src/utils/growthCalculations.ts`:
+- `isExponentialGrowth`: Change the 0.6 threshold for exponential detection
+- `determineTrend`: Modify growth rate thresholds for trend classification
 
-### Core Tables
-- **packages**: Package metadata and tracking info
-- **package_downloads**: Daily download statistics (time-series)
-- **package_weekly_stats**: Aggregated weekly metrics
-- **package_growth_analysis**: Growth analysis results
+## NPM Registry API
 
-### Key Views
-- **package_summary**: Combined package stats for dashboard
-- **trending_packages**: High-growth packages over 30 days
+This project uses the official NPM Registry API:
+- **Download Stats**: `https://api.npmjs.org/downloads/point/{start}:{end}/{package}`
+- **Package Info**: `https://registry.npmjs.org/{package}`
 
-## 📦 API Endpoints
+Rate limits: ~100 requests per minute per IP
 
-### Packages
-- `GET /api/packages` - Get all tracked packages with summaries
-- `POST /api/packages` - Add a new package to track
-- `DELETE /api/packages/:id` - Remove package from tracking
-- `GET /api/packages/:name` - Get detailed package information
+## Troubleshooting
 
-### Search
-- `GET /api/search?q=<query>` - Search npm packages
+### "Missing Supabase environment variables"
+- Make sure `.env` file exists and contains valid Supabase credentials
+- Restart the dev server after creating/editing `.env`
 
-## 🚀 Next Steps
+### "Failed to fetch data"
+- Check if Supabase tables are created (run the SQL schema)
+- Verify RLS policies are set up correctly
+- Check browser console for specific error messages
 
-This dashboard provides a solid foundation for npm package growth tracking. Key areas for enhancement include:
+### "No data available"
+- Click "Update Data" to fetch initial data
+- Wait for the update process to complete (~1-2 minutes)
 
-1. **Growth Analysis Algorithms** - Implement sophisticated trend detection
-2. **Automated Data Collection** - Set up scheduled data updates
-3. **Alert System** - Notifications for high-growth packages
-4. **Advanced Analytics** - Predictive growth modeling
-5. **Deployment** - Production-ready hosting setup
+### Rate Limiting
+- NPM API has rate limits (~100 req/min)
+- The app includes small delays between requests
+- If you hit rate limits, wait a few minutes and try again
 
-The current implementation demonstrates all core concepts and provides a fully functional dashboard for immediate use.
+## Future Enhancements
 
----
+- [ ] Add search functionality for specific packages
+- [ ] Export data to CSV/JSON
+- [ ] Compare multiple packages side-by-side
+- [ ] Email alerts for packages hitting exponential growth
+- [ ] Weekly/monthly growth reports
+- [ ] Integration with GitHub stars/trending
+- [ ] Dark mode toggle
+- [ ] Automated daily data updates via Supabase Edge Functions
 
-**Happy tracking! 📊✨**
+## Contributing
+
+Feel free to submit issues or pull requests!
+
+## License
+
+MIT
+
+## Author
+
+Prachit Bhike
